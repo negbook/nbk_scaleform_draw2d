@@ -1,0 +1,346 @@
+imports = function()
+	if GetResourceState("nbk_scaleform_draw2d") ~= "started" then 
+		error("Resource: nbk_scaleform_draw2d Not Loaded Yet!",2)
+	else
+		local HexToRGBA = function (hex,skipkeys)
+			local r = hex >> 24
+			local offset = hex - (r << 24)
+			local g = offset >> 16
+			local offset = offset - (g << 16)
+			local b = offset >> 8
+			local offset = offset - (b << 8)
+			local a = offset
+			return (not skipkeys and {r=r,g=g,b=b,a=a}) or {r,g,b,a};
+		end 
+		local handle = exports['nbk_scaleform_draw2d']:GetGlobalHandle()
+		if not handle then return end 
+		local actions = {
+			["numberinteger"] = ScaleformMovieMethodAddParamInt,
+			["numberfloat"] = ScaleformMovieMethodAddParamFloat,
+			["string"] = ScaleformMovieMethodAddParamTextureNameString,
+			["boolean"] = ScaleformMovieMethodAddParamBool
+		}
+		local _sendscaleformvalues = function (...)
+			local tb = {...}
+			PushScaleformMovieFunction(handle,tb[1])
+			local iscb,cb,cbtype = false , {}
+			for i=2,#tb do
+				local p = tb[i]
+				local action_pre = type(p)
+				if action_pre == 'function' or action_pre == 'table' then 
+					table.insert(cb,p) 
+					if type(tb[#tb]) == 'function' then 
+						cbtype = 'empty'
+					else 
+						cbtype = tb[#tb]
+					end 
+					table.remove(tb,#tb)
+					iscb = true
+				else 
+					local action = action_pre == "number" and action_pre .. math.type(p) or action_pre
+					if actions[action] == nil then action = "string" end 
+					actions[action](p)
+				end 
+			end 
+			if iscb then 
+				local value = EndScaleformMovieMethodReturn()
+				CreateThread(function()
+					local maxtemp = 5000;
+					repeat
+						if (IsScaleformMovieMethodReturnValueReady(value)) then
+							cbtypes = {}
+							if cbtype then 
+								if string.find(cbtype,'bool') then cbtype = 'boolean'   
+								elseif string.find(cbtype,'int') then cbtype = 'number'  
+								elseif string.find(cbtype,'str') then cbtype = 'string' 
+								else cbtype = 'boolean' end 
+								cbtypes['number'] = GetScaleformMovieMethodReturnValueInt;
+								cbtypes['string'] = GetScaleformMovieMethodReturnValueString;
+								cbtypes['boolean'] = GetScaleformMovieMethodReturnValueBool;
+								local result = cbtypes[cbtype](value)
+								for i,v in pairs(cb) do 
+									v(result)
+								end 
+								break
+							end 
+						end
+						maxtemp = maxtemp - 1
+						Wait(0)
+					until maxtemp <= 0
+				end)
+			else 
+				PopScaleformMovieFunctionVoid()
+			end 
+		end
+		local currentresourceindex = 0
+		local currentresourcenamespaceindex = function(b) 
+			local r = GetCurrentResourceName()..":"..currentresourceindex
+			currentresourceindex = currentresourceindex + 1
+			if b then return currentresourceindex end 
+		return r end 
+		local isdrawing = {}
+		local ishooking = false 
+		local selectcbs = {}
+		DrawSelectionHook = function(bool,cb) 
+			if bool == nil then bool = true end 
+			ishooking = bool
+			if bool then 
+				local oldselection = "NULL"
+				local callback = function(selection)
+					if selection ~= oldselection then
+						print('change from',oldselection,"to",selection)
+						oldselection = selection
+					end 
+				end
+				local thisSelection = "NULL";
+				RegisterCommand('nbk_scaleform_draw2d:ClickCheck', function()
+					if ishooking then 
+						local on = {}
+						if selectcbs[thisSelection] then selectcbs[thisSelection](on) end 
+						if on.click then 
+							on.click(thisSelection)
+						end 
+					end 
+				end, false)
+
+				RegisterKeyMapping("nbk_scaleform_draw2d:ClickCheck","ClickCheck","MOUSE_BUTTONANY","MOUSE_LEFT")
+				
+				CreateThread(function()
+					local ishover = false ;
+					while ishooking do 
+						Wait(100)
+						_sendscaleformvalues("GET_CURRENT_SELECTION",function(selection)
+							thisSelection = selection;
+							(cb or callback)(selection);
+							if selection ~= "NULL" then 
+								if selectcbs[selection] then 
+									local on = {}
+									selectcbs[selection](on)
+									if on.hover then 
+										on.hover(selection)
+										ishover = true 
+									end 
+									if selection ~= oldselection then 
+										if on.unhover then 
+											on.unhover(selection)
+										end 
+										oldselection = selection
+									end 
+								end 
+							else 
+								if selectcbs[oldselection] then 
+									local on = {}
+									selectcbs[oldselection](on)
+									if selection ~= oldselection then 
+										if on.unhover then 
+											on.unhover(selection)
+										end 
+										oldselection = selection
+									end 
+								end 
+							end 
+						end,"string")
+					end 
+				end)
+			end 
+		end 
+		
+		DrawRectS = function(x, y, w, h, r, g, b, a, ...)
+			
+			local namespacedindex = currentresourcenamespaceindex() 
+			local iscb = false 
+			local opt = {...} 
+			local lastopt = opt[#opt]
+			if type(lastopt) == 'function' then 
+				local selectcb = lastopt 
+				selectcbs[namespacedindex] = selectcb
+				table.remove(opt,#opt)
+				iscb = true 
+			end 
+			_sendscaleformvalues("DRAW_RECT", namespacedindex, x, y, w, h, r, g, b, a, iscb, table.unpack(opt))
+			isdrawing[namespacedindex] = true
+			return namespacedindex
+		end 
+		DrawSpriteS = function(txd, txn, x, y, w, h,heading, r, g, b, a, ...) --Call directly, no need to RequestStreamedTextureDict
+			
+			local namespacedindex = currentresourcenamespaceindex()
+			local iscb = false 
+			local opt = {...} 
+			local lastopt = opt[#opt]
+			if type(lastopt) == 'function' then 
+				local selectcb = lastopt 
+				selectcbs[namespacedindex] = selectcb
+				table.remove(opt,#opt)
+				iscb = true 
+			end 
+			_sendscaleformvalues("DRAW_SPRITE", namespacedindex, txd, txn, x, y, w, h,heading, r, g, b, a, iscb, table.unpack(opt))
+			isdrawing[namespacedindex] = true
+			return namespacedindex
+		end 
+		DrawPageS = function(file, x, y, w, h,heading, r, g, b, a, ...)  --Call directly, no need to RequestStreamedTextureDict 
+			
+			local namespacedindex = currentresourcenamespaceindex()
+			local iscb = false 
+			local opt = {...} 
+			local lastopt = opt[#opt]
+			if type(lastopt) == 'function' then 
+				local selectcb = lastopt 
+				selectcbs[namespacedindex] = selectcb
+				table.remove(opt,#opt)
+				iscb = true 
+			end 
+			_sendscaleformvalues("DRAW_PAGE", namespacedindex, file, x, y, w, h,heading, r, g, b, a, iscb, table.unpack(opt)) 
+			isdrawing[namespacedindex] = true
+			return namespacedindex
+		end 
+		DrawTextS = function(str, x, y, scale, r, g, b, a, ...)
+			
+			local namespacedindex = currentresourcenamespaceindex()
+			local iscb = false 
+			local opt = {...} 
+			local lastopt = opt[#opt]
+			if type(lastopt) == 'function' then 
+				local selectcb = lastopt 
+				selectcbs[namespacedindex] = selectcb
+				table.remove(opt,#opt)
+				iscb = true 
+			end 
+			_sendscaleformvalues("DRAW_TEXT", namespacedindex, str, x, y, scale, r, g, b, a, iscb, table.unpack(opt))
+			isdrawing[namespacedindex] = true
+			return namespacedindex
+		end
+		DrawCursor = function(b)
+			_sendscaleformvalues("SHOW_CURSOR", b)
+		end
+		DrawCursorState = function(state)
+			_sendscaleformvalues("SET_CURSOR_STATE", state)
+		end
+		
+		DrawCursorS = DrawCursor
+		DeleteRectS = function(namespacedindex)
+			_sendscaleformvalues("DELETE_RECT", namespacedindex)
+			selectcbs[namespacedindex] = nil
+			isdrawing[namespacedindex] = nil
+		end 
+		DeleteSpriteS = function(namespacedindex)
+			_sendscaleformvalues("DELETE_SPRITE", namespacedindex)
+			selectcbs[namespacedindex] = nil
+			isdrawing[namespacedindex] = nil
+		end 
+		DeletePageS = function(namespacedindex)
+			print('deletepage')
+			_sendscaleformvalues("DELETE_PAGE", namespacedindex)
+			selectcbs[namespacedindex] = nil
+			isdrawing[namespacedindex] = nil
+		end 
+		DeleteTextS = function(namespacedindex)
+			_sendscaleformvalues("DELETE_TEXT", namespacedindex)
+			selectcbs[namespacedindex] = nil
+			isdrawing[namespacedindex] = nil
+		end 
+		DrawRectSF = function(forcename, x, y, w, h, r, g, b, a, ...)
+			local namespacedindex = GetCurrentResourceName()..":"..forcename
+			local iscb = false 
+			local opt = {...} 
+			local lastopt = opt[#opt]
+			if type(lastopt) == 'function' then 
+				local selectcb = lastopt 
+				selectcbs[namespacedindex] = selectcb
+				table.remove(opt,#opt)
+				iscb = true 
+			end 
+			_sendscaleformvalues("DRAW_RECT", namespacedindex, x, y, w, h, r, g, b, a, iscb, table.unpack(opt))
+			isdrawing[namespacedindex] = true
+			return namespacedindex
+		end 
+		DrawSpriteSF = function(forcename, txd, txn, x, y, w, h,heading, r, g, b, a, ...) --Call directly, no need to RequestStreamedTextureDict 
+			local namespacedindex = GetCurrentResourceName()..":"..forcename
+			local iscb = false 
+			local opt = {...} 
+			local lastopt = opt[#opt]
+			if type(lastopt) == 'function' then 
+				local selectcb = lastopt 
+				selectcbs[namespacedindex] = selectcb
+				table.remove(opt,#opt)
+				iscb = true
+			end 
+			_sendscaleformvalues("DRAW_SPRITE", namespacedindex, txd, txn, x, y, w, h,heading, r, g, b, a, iscb, table.unpack(opt))
+			isdrawing[namespacedindex] = true
+			return namespacedindex
+		end 
+		DrawPageSF = function(forcename, file, x, y, w, h,heading, r, g, b, a, ...)  --Call directly, no need to RequestStreamedTextureDict 
+			local namespacedindex = GetCurrentResourceName()..":"..forcename
+			local iscb = false 
+			local opt = {...} 
+			local lastopt = opt[#opt]
+			if type(lastopt) == 'function' then 
+				local selectcb = lastopt 
+				selectcbs[namespacedindex] = selectcb
+				table.remove(opt,#opt)
+				iscb = true
+			end 
+			_sendscaleformvalues("DRAW_PAGE", namespacedindex, file, x, y, w, h,heading, r, g, b, a, iscb, table.unpack(opt)) 
+			isdrawing[namespacedindex] = true
+			return namespacedindex
+		end 
+		DrawTextSF = function(forcename, str, x, y, scale, r, g, b, a, ...)
+			local namespacedindex = GetCurrentResourceName()..":"..forcename
+			local iscb = false 
+			local opt = {...} 
+			local lastopt = opt[#opt]
+			if type(lastopt) == 'function' then 
+				local selectcb = lastopt 
+				selectcbs[namespacedindex] = selectcb
+				table.remove(opt,#opt)
+				iscb = true
+			end 
+			_sendscaleformvalues("DRAW_TEXT", namespacedindex, str, x, y, scale, r, g, b, a, iscb, table.unpack(opt))
+			isdrawing[namespacedindex] = true
+			return namespacedindex
+		end
+		UpdateTextSF = DrawTextSF
+		DeleteRectSF = DeleteRectS
+		DeleteSpriteSF = DeleteSpriteS
+		DeletePageSF = DeletePageS
+		DeleteTextSF = DeleteTextS
+		Try = _sendscaleformvalues
+		IsDrawingS = function(namespacedindex)
+			if namespacedindex == nil then return false end 
+			return not ( isdrawing[namespacedindex] == nil)
+		end 
+		IsDrawingSF = IsDrawingS
+		TEXTDRAW_MAPS = function(x,...) 
+			return function(...)
+				return _sendscaleformvalues(x, ...)
+			end 
+		end 
+		TextDrawShow = TEXTDRAW_MAPS("SET_TEXT_SHOW",namespacedindex) 
+		TextDrawHide = TEXTDRAW_MAPS("SET_TEXT_HIDE",namespacedindex) 
+		TextDrawPosition = TEXTDRAW_MAPS("SET_TEXT_POSITION",namespacedindex,x,y)
+		TextDrawSetPosition = TextDrawPosition
+		TextDrawString = TEXTDRAW_MAPS("SET_TEXT_STRING",namespacedindex, str)
+		TextDrawSetString = TextDrawString
+		TextDrawColor = TEXTDRAW_MAPS("SET_TEXT_COLOUR",namespacedindex, r, g, b, a) 
+		TextDrawAlpha = TEXTDRAW_MAPS("SET_TEXT_ALPHA",namespacedindex, alpha)  
+		TextDrawTextScale = TEXTDRAW_MAPS("SET_TEXT_SCALE",namespacedindex, scale)  
+		TextDrawTextSize = TextDrawTextScale
+		TextDrawFont = TEXTDRAW_MAPS("SET_TEXT_FONT",namespacedindex, fontstr) 
+		TextDrawBoxColour = TEXTDRAW_MAPS("SET_TEXT_BOX_COLOUR",namespacedindex, r, g, b, a) 
+		TextDrawOutline = TEXTDRAW_MAPS("SET_TEXT_OUTLINE",namespacedindex, isoutline)
+		TextDrawShadow = TEXTDRAW_MAPS("SET_TEXT_SHADOW",namespacedindex,  r, g, b, a, blurX, blurY, strength) 
+		TextDrawCenter = TEXTDRAW_MAPS("SET_TEXT_CENTER",namespacedindex, iscenter) 
+		TextDrawRight = TEXTDRAW_MAPS("SET_TEXT_RIGHT",namespacedindex, isright) 
+		TextDrawWrap = TEXTDRAW_MAPS("SET_TEXT_WRAP",namespacedindex, l, r) 
+		TextDrawDestroy = DeleteTextS 
+		TextDrawCreate = function(str, x, y, fontstr, scale, iscenter,isoutline, r, g, b, a)
+			local h = DrawTextS(str, x, y, fontstr, scale, iscenter,isoutline, r, g, b, a)
+			TextDrawHide(h)
+			return h 
+		end
+	end
+end 
+if GetCurrentResourceName() ~= "nbk_scaleform_draw2d" then
+	imports() 
+else 
+	InitExample = imports
+end 
