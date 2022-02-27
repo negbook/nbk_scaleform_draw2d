@@ -1,19 +1,16 @@
 test = 1
-
 CreateThread(function() 
-	
 	load(LoadResourceFile("nbk_scaleform_draw2d", 'import'))()
 	--'restart nbk_scaleform_draw2d'
 	InitExample()
 	if test == 1 then goto state1 end
-	if test == 2 then goto dontdothat end 
-
+	if test == 2 then goto dontdoloopdontdothat end 
 	::default:: do 
 		return 
 	end 
-	
 	::state1:: do 
 		local returnhovercolor = function() return 255,255,255,150 end 
+		SetFadeInBegin("fadegroup1",2500,2500,false)
 		DrawRectS(0.20500001410593,0.20000001222514,0.24000002821186,0.038000004466878,0,0,0,220)
 		DrawRectS(0.20500001410593,0.39200003455953,0.24000002821186,0.038000004466878,0,0,0,220)
 		DrawRectS(0.20500001410593,0.41675003679297,0.24000002821186,0.0015,0,0,0,255)
@@ -31,13 +28,13 @@ CreateThread(function()
 		local r = DrawTextS("1 / 7",0.32500002821186,0.1860000099917,0.36500004290554,93,182,229,255)
 		TextDrawWrap(r,0.085,0.085+0.240-0.005)
 		TextDrawRight(r,true)
+		SetAutoColourBegin("colorgroup1",500)
 		DrawTextS("%NBK_CUSTOM1%",0.09,0.22400001445858,0.36500004290554,0,0,0,255)
 		DrawTextS("deluxo",0.26968752940395,0.22400001445858,0.36500004290554,0,0,0,255)
 		DrawTextS("~y~Suicide~w~",0.09,0.26200001892546,0.36500004290554)
 		DrawTextS("~y~~h~he %NBK_CUSTOM2% ~n~ ~BLIP_BENNYS~ ~FACE_TITLE~ ~ws~ ~ws~ ~ws~",0.09,0.30000002339233,0.36500004290554)
 		DrawTextS("~g~$3000~g~",0.28321878050664,0.30000002339233,0.36500004290554)
 		local x= DrawTextS("~y~~h~he %NBK_CUSTOM3% ~n~ ~BLIP_BENNYS~ ~FACE_TITLE~ ~ws~ ~ws~ ~ws~",0.09,0.33800002785921,0.36500004290554,155,155,155,255,returnhovercolor())
-		
 		DrawTextSF("hello","hello",0.09,0.42000003679297,0.36500004290554,255,255,255,255,255,255,255,255,function(on)
 			on.click = function(selection)
 				print("wow this is hello click",selection)
@@ -51,38 +48,29 @@ CreateThread(function()
 				print("wow this is hello unhover",selection)
 				DrawCursorState("arrow")
 			end 
-			
 		end)
 		DrawPageSF("hello2","mp_menu_glare",0.05,0.05,1.0,1.0,0,255,255,255,255,function(on)
-			
-		end)
-		DrawSelectionHook(true,function(selection)
-			--print(selection)
 		end)
 		
+		--SetFadeInEnd()
+		--SetFadeInShow("fadegroup1")
 		DrawCursor()
-		
+		SetAutoColourEnd()
+		SetFadeInEnd()
+		SetAutoColourShow("colorgroup1")
+		SetFadeInShow("fadegroup1")
 		Wait(100)
 		AddTextEntry("NBK_CUSTOMR","~EX_R*~");
-
 		CreateThread(function()
-			
 			while true do Wait(100)
-				
 				AddTextEntry("NBK_CUSTOM1","HELLO"..math.random(0,150))
 				AddTextEntry("NBK_CUSTOM2","HELLO2"..math.random(15,666))
 				AddTextEntry("NBK_CUSTOM3","HELLO3"..math.random(32,1523))
-				
 			end 
-			
-			
 		end)
-				
-		
-	
 		return 
 	end 
-	::dontdothat:: do 
+	::dontdoloopdontdothat:: do 
 		CreateThread(function()
 				while true do Wait(1000) 
 					AddTextEntry("NBK_CUSTOM1","nb"..GetRandomIntInRange(0,150))
@@ -90,8 +78,6 @@ CreateThread(function()
 				end 
 			end)
 		while true do Wait(0) --tested really bad perfromance in loop
-			
-			
 			SetFadeInBegin("fadegroup1",500,500,500)
 			DrawRectSF("1",0.20500001410593,0.20000001222514,0.24000002821186,0.038000004466878,0,0,0,220)
 			DrawRectSF("2",0.20500001410593,0.39200003455953,0.24000002821186,0.038000004466878,0,0,0,220)
@@ -123,15 +109,10 @@ CreateThread(function()
 			SetFadeInEnd("fadegroup2")
 			Wait(500)
 			SetFadeInShow("fadegroup1");
-			
 		end 
 		return
 	end 
-	
-
 end)
-
-
 --[[
 		TextDrawShow = TEXTDRAW_MAPS("SET_TEXT_SHOW") -- params : namespacedindex
 		TextDrawHide = TEXTDRAW_MAPS("SET_TEXT_HIDE") -- params : namespacedindex

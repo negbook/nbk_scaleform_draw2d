@@ -2,6 +2,7 @@ imports = function()
 	if GetResourceState("nbk_scaleform_draw2d") ~= "started" then 
 		error("Resource: nbk_scaleform_draw2d Not Loaded Yet!",2)
 	else
+		
 		local HexToRGBA = function (hex,skipkeys)
 			local r = hex >> 24
 			local offset = hex - (r << 24)
@@ -12,7 +13,12 @@ imports = function()
 			local a = offset
 			return (not skipkeys and {r=r,g=g,b=b,a=a}) or {r,g,b,a};
 		end 
-		local handle = exports['nbk_scaleform_draw2d']:GetGlobalHandle()
+		local handle,thisnamespace = exports['nbk_scaleform_draw2d']:GetGlobalHandle()
+		local GetNameSpace = function()
+			local r = thisnamespace --GetIdOfThisThread()
+			
+			return r 
+		end 
 		if not handle then return end 
 		local actions = {
 			["numberinteger"] = ScaleformMovieMethodAddParamInt,
@@ -74,7 +80,9 @@ imports = function()
 		end
 		local currentresourceindex = 0
 		local currentresourcenamespaceindex = function(b) 
-			local r = GetIdOfThisThread()..":"..currentresourceindex
+			local namespace = GetNameSpace()
+			
+			local r = namespace..":"..currentresourceindex
 			currentresourceindex = currentresourceindex + 1
 			if b then return currentresourceindex end 
 		return r end 
@@ -114,10 +122,16 @@ imports = function()
 								
 								
 								local info = json.decode(result)
-								selection = info[1]
+								local selection = info[1]
+								local mouseX = info[2]
+								local mouseY = info[3]
 								if selection then 
 									thisSelection = selection;
-									(cb or callback)(selection);
+									(cb or callback)({
+										selection = selection,
+										mouseX = mouseX,
+										mouseY = mouseY
+									});
 									if selection ~= "NULL" then 
 										if selectcbs[selection] then 
 											local on = {}
@@ -166,6 +180,7 @@ imports = function()
 				table.remove(opt,#opt)
 				iscb = true 
 			end 
+			if namespacedindex:len() > 40 then error("namespace or id too long (max:40) :"..namespacedindex:len(),1) return end
 			_sendscaleformvalues("DRAW_RECT", namespacedindex, x, y, w, h, r, g, b, a, iscb, table.unpack(opt))
 			isdrawing[namespacedindex] = true
 			return namespacedindex
@@ -182,6 +197,7 @@ imports = function()
 				table.remove(opt,#opt)
 				iscb = true 
 			end 
+			if namespacedindex:len() > 40 then error("namespace or id too long (max:40) :"..namespacedindex:len(),1) return end
 			_sendscaleformvalues("DRAW_SPRITE", namespacedindex, txd, txn, x, y, w, h,heading, r, g, b, a, iscb, table.unpack(opt))
 			isdrawing[namespacedindex] = true
 			return namespacedindex
@@ -198,6 +214,7 @@ imports = function()
 				table.remove(opt,#opt)
 				iscb = true 
 			end 
+			if namespacedindex:len() > 40 then error("namespace or id too long (max:40) :"..namespacedindex:len(),1) return end
 			_sendscaleformvalues("DRAW_PAGE", namespacedindex, file, x, y, w, h,heading, r, g, b, a, iscb, table.unpack(opt)) 
 			isdrawing[namespacedindex] = true
 			return namespacedindex
@@ -214,6 +231,7 @@ imports = function()
 				table.remove(opt,#opt)
 				iscb = true 
 			end 
+			if namespacedindex:len() > 40 then error("namespace or id too long (max:40) :"..namespacedindex:len(),1) return end
 			_sendscaleformvalues("DRAW_TEXT", namespacedindex, str, x, y, scale, r, g, b, a, iscb, table.unpack(opt))
 			isdrawing[namespacedindex] = true
 			return namespacedindex
@@ -248,7 +266,9 @@ imports = function()
 			isdrawing[namespacedindex] = nil
 		end 
 		DrawRectSF = function(forcename, x, y, w, h, r, g, b, a, ...)
-			local namespacedindex = GetCurrentResourceName()..":"..forcename
+			local namespace = GetNameSpace()
+			
+			local namespacedindex = namespace..":"..forcename
 			local iscb = false 
 			local opt = {...} 
 			local lastopt = opt[#opt]
@@ -258,12 +278,15 @@ imports = function()
 				table.remove(opt,#opt)
 				iscb = true 
 			end 
+			if namespacedindex:len() > 40 then error("namespace or id too long (max:40) :"..namespacedindex:len(),1) return end
 			_sendscaleformvalues("DRAW_RECT", namespacedindex, x, y, w, h, r, g, b, a, iscb, table.unpack(opt))
 			isdrawing[namespacedindex] = true
 			return namespacedindex
 		end 
 		DrawSpriteSF = function(forcename, txd, txn, x, y, w, h,heading, r, g, b, a, ...) --Call directly, no need to RequestStreamedTextureDict 
-			local namespacedindex = GetCurrentResourceName()..":"..forcename
+			local namespace = GetNameSpace()
+			
+			local namespacedindex = namespace..":"..forcename
 			local iscb = false 
 			local opt = {...} 
 			local lastopt = opt[#opt]
@@ -273,12 +296,16 @@ imports = function()
 				table.remove(opt,#opt)
 				iscb = true
 			end 
+			
+			if namespacedindex:len() > 40 then error("namespace or id too long (max:40) :"..namespacedindex:len(),1) return end
 			_sendscaleformvalues("DRAW_SPRITE", namespacedindex, txd, txn, x, y, w, h,heading, r, g, b, a, iscb, table.unpack(opt))
 			isdrawing[namespacedindex] = true
 			return namespacedindex
 		end 
 		DrawPageSF = function(forcename, file, x, y, w, h,heading, r, g, b, a, ...)  --Call directly, no need to RequestStreamedTextureDict 
-			local namespacedindex = GetCurrentResourceName()..":"..forcename
+			local namespace = GetNameSpace()
+			
+			local namespacedindex = namespace..":"..forcename
 			local iscb = false 
 			local opt = {...} 
 			local lastopt = opt[#opt]
@@ -288,12 +315,15 @@ imports = function()
 				table.remove(opt,#opt)
 				iscb = true
 			end 
+			if namespacedindex:len() > 40 then error("namespace or id too long (max:40) :"..namespacedindex:len(),1) return end
 			_sendscaleformvalues("DRAW_PAGE", namespacedindex, file, x, y, w, h,heading, r, g, b, a, iscb, table.unpack(opt)) 
 			isdrawing[namespacedindex] = true
 			return namespacedindex
 		end 
 		DrawTextSF = function(forcename, str, x, y, scale, r, g, b, a, ...)
-			local namespacedindex = GetCurrentResourceName()..":"..forcename
+			local namespace = GetNameSpace()
+			
+			local namespacedindex = namespace..":"..forcename
 			local iscb = false 
 			local opt = {...} 
 			local lastopt = opt[#opt]
@@ -303,6 +333,7 @@ imports = function()
 				table.remove(opt,#opt)
 				iscb = true
 			end 
+			if namespacedindex:len() > 40 then error("namespace or id too long (max:40) :"..namespacedindex:len(),1) return end
 			_sendscaleformvalues("DRAW_TEXT", namespacedindex, str, x, y, scale, r, g, b, a, iscb, table.unpack(opt))
 			isdrawing[namespacedindex] = true
 			return namespacedindex
@@ -323,6 +354,13 @@ imports = function()
 				return _sendscaleformvalues(x, ...)
 			end 
 		end 
+		SetFadeInBegin = TEXTDRAW_MAPS("SET_FADE_IN_BEGIN",fadegroup,inspeed, outspeed, isshort, shortduration)
+		SetFadeInEnd = TEXTDRAW_MAPS("SET_FADE_IN_END")
+		SetFadeInShow = TEXTDRAW_MAPS("SET_FADE_IN_SHOW",fadegroup,isshort)
+		SetFadeOut = TEXTDRAW_MAPS("SET_FADE_OUT",fadegroup)
+		SetAutoColourBegin = TEXTDRAW_MAPS("SET_AUTO_COLOUR_BEGIN",autocolorgroup,speed)
+		SetAutoColourEnd = TEXTDRAW_MAPS("SET_AUTO_COLOUR_END")
+		SetAutoColourShow = TEXTDRAW_MAPS("SET_AUTO_COLOUR_SHOW",autocolorgroup)
 		TextDrawShow = TEXTDRAW_MAPS("SET_TEXT_SHOW",namespacedindex) 
 		TextDrawHide = TEXTDRAW_MAPS("SET_TEXT_HIDE",namespacedindex) 
 		TextDrawPosition = TEXTDRAW_MAPS("SET_TEXT_POSITION",namespacedindex,x,y)

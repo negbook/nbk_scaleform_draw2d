@@ -1,5 +1,5 @@
 GlobalHandle = nil 
-		
+GlobalNameSpace = 0	
 local function Reload()
 	if GlobalHandle == nil or not HasScaleformMovieLoaded(GlobalHandle) then 
 		local handle = RequestScaleformMovie("nbk_scaleform_draw2d")
@@ -31,7 +31,8 @@ GetGlobalHandle = function()
 		GlobalHandle = nil 
 		Reload()
 	end 
-	return GlobalHandle
+	GlobalNameSpace = GlobalNameSpace + 1
+	return GlobalHandle,GlobalNameSpace
 end 
 
 exports('GetGlobalHandle',GetGlobalHandle)	
