@@ -92,11 +92,12 @@ CreateThread(function()
 		while true do Wait(0) --tested really bad perfromance in loop
 			
 			
-			
+			SetFadeInBegin("fadegroup1",500,500,500)
 			DrawRectSF("1",0.20500001410593,0.20000001222514,0.24000002821186,0.038000004466878,0,0,0,220)
 			DrawRectSF("2",0.20500001410593,0.39200003455953,0.24000002821186,0.038000004466878,0,0,0,220)
 			DrawRectSF("3",0.20500001410593,0.41675003679297,0.24000002821186,0.0015,0,0,0,255)
-			
+			SetFadeInEnd("fadegroup1")
+			SetFadeInBegin("fadegroup2",500,500,500)
 			DrawSpriteSF("4","CommonMenu","interaction_bgd",0.20500001410593,0.13850000499585,0.24000002821186,0.085000009991701,0,255,255,255,255)
 			DrawSpriteSF("5","CommonMenu","Gradient_Bgd",0.20500001410593,0.29500002339233,0.24000002821186,0.15200001786751,0,255,255,255,255)
 			DrawSpriteSF("6","CommonMenu","Gradient_Nav",0.20500001410593,0.24300001669202,0.24000002821186,0.038000004466878,0,255,255,255,255)
@@ -119,6 +120,9 @@ CreateThread(function()
 			DrawTextSF("21","Race",0.09,0.33800002785921,0.36500004290554,GetHudColour(GetRandomIntInRange(0,150)))
 			DrawTextSF("22","hello",0.09,0.42000003679297,0.36500004290554,GetHudColour(GetRandomIntInRange(0,150)))
 			DrawPageSF("23","mp_menu_glare",0.05,0.05,1.0,1.0,0,255,255,255,255)
+			SetFadeInEnd("fadegroup2")
+			Wait(500)
+			SetFadeInShow("fadegroup1");
 			
 		end 
 		return

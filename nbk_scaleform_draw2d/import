@@ -74,7 +74,7 @@ imports = function()
 		end
 		local currentresourceindex = 0
 		local currentresourcenamespaceindex = function(b) 
-			local r = GetCurrentResourceName()..":"..currentresourceindex
+			local r = GetIdOfThisThread()..":"..currentresourceindex
 			currentresourceindex = currentresourceindex + 1
 			if b then return currentresourceindex end 
 		return r end 
@@ -109,35 +109,44 @@ imports = function()
 					local ishover = false ;
 					while ishooking do 
 						Wait(100)
-						_sendscaleformvalues("GET_CURRENT_SELECTION",function(selection)
-							thisSelection = selection;
-							(cb or callback)(selection);
-							if selection ~= "NULL" then 
-								if selectcbs[selection] then 
-									local on = {}
-									selectcbs[selection](on)
-									if on.hover then 
-										on.hover(selection)
-										ishover = true 
-									end 
-									if selection ~= oldselection then 
-										if on.unhover then 
-											on.unhover(selection)
+						_sendscaleformvalues("GET_CURRENT_SELECTION",function(result)
+							if result then 
+								
+								
+								local info = json.decode(result)
+								selection = info[1]
+								if selection then 
+									thisSelection = selection;
+									(cb or callback)(selection);
+									if selection ~= "NULL" then 
+										if selectcbs[selection] then 
+											local on = {}
+											selectcbs[selection](on)
+											if on.hover then 
+												on.hover(selection)
+												ishover = true 
+											end 
+											if selection ~= oldselection then 
+												if on.unhover then 
+													on.unhover(selection)
+												end 
+												oldselection = selection
+											end 
 										end 
-										oldselection = selection
+									else 
+										if selectcbs[oldselection] then 
+											local on = {}
+											selectcbs[oldselection](on)
+											if selection ~= oldselection then 
+												if on.unhover then 
+													on.unhover(selection)
+												end 
+												oldselection = selection
+											end 
+										end 
 									end 
 								end 
-							else 
-								if selectcbs[oldselection] then 
-									local on = {}
-									selectcbs[oldselection](on)
-									if selection ~= oldselection then 
-										if on.unhover then 
-											on.unhover(selection)
-										end 
-										oldselection = selection
-									end 
-								end 
+								
 							end 
 						end,"string")
 					end 
