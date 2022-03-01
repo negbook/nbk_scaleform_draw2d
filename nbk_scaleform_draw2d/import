@@ -45,6 +45,7 @@ imports = function()
 				else 
 					local action = action_pre == "number" and action_pre .. math.type(p) or action_pre
 					if actions[action] == nil then action = "string" end 
+					
 					actions[action](p)
 				end 
 			end 
@@ -60,6 +61,7 @@ imports = function()
 								elseif string.find(cbtype,'int') then cbtype = 'number'  
 								elseif string.find(cbtype,'str') then cbtype = 'string' 
 								else cbtype = 'boolean' end 
+								
 								cbtypes['number'] = GetScaleformMovieMethodReturnValueInt;
 								cbtypes['string'] = GetScaleformMovieMethodReturnValueString;
 								cbtypes['boolean'] = GetScaleformMovieMethodReturnValueBool;
@@ -89,6 +91,7 @@ imports = function()
 		local isdrawing = {}
 		local ishooking = false 
 		local selectcbs = {}
+		local isdebugmode = false
 		DrawSelectionHook = function(bool,cb) 
 			if bool == nil then bool = true end 
 			ishooking = bool
@@ -163,6 +166,7 @@ imports = function()
 								
 							end 
 						end,"string")
+						
 					end 
 				end)
 			end 
@@ -182,6 +186,23 @@ imports = function()
 			end 
 			if namespacedindex:len() > 40 then error("namespace or id too long (max:40) :"..namespacedindex:len(),1) return end
 			_sendscaleformvalues("DRAW_RECT", namespacedindex, x, y, w, h, r, g, b, a, iscb, table.unpack(opt))
+			isdrawing[namespacedindex] = true
+			return namespacedindex
+		end 
+		DrawCircleS = function(x, y, radius, r, g, b, a, ...)
+			
+			local namespacedindex = currentresourcenamespaceindex() 
+			local iscb = false 
+			local opt = {...} 
+			local lastopt = opt[#opt]
+			if type(lastopt) == 'function' then 
+				local selectcb = lastopt 
+				selectcbs[namespacedindex] = selectcb
+				table.remove(opt,#opt)
+				iscb = true 
+			end 
+			if namespacedindex:len() > 40 then error("namespace or id too long (max:40) :"..namespacedindex:len(),1) return end
+			_sendscaleformvalues("DRAW_CIRCLE", namespacedindex,x, y, radius, r, g, b, a, iscb, table.unpack(opt))
 			isdrawing[namespacedindex] = true
 			return namespacedindex
 		end 
@@ -283,6 +304,24 @@ imports = function()
 			isdrawing[namespacedindex] = true
 			return namespacedindex
 		end 
+		DrawCircleSF = function(forcename, x, y, radius, r, g, b, a, ...)
+			local namespace = GetNameSpace()
+			
+			local namespacedindex = namespace..":"..forcename
+			local iscb = false 
+			local opt = {...} 
+			local lastopt = opt[#opt]
+			if type(lastopt) == 'function' then 
+				local selectcb = lastopt 
+				selectcbs[namespacedindex] = selectcb
+				table.remove(opt,#opt)
+				iscb = true 
+			end 
+			if namespacedindex:len() > 40 then error("namespace or id too long (max:40) :"..namespacedindex:len(),1) return end
+			_sendscaleformvalues("DRAW_CIRCLE", namespacedindex, x, y, radius, r, g, b, a, iscb, table.unpack(opt))
+			isdrawing[namespacedindex] = true
+			return namespacedindex
+		end 
 		DrawSpriteSF = function(forcename, txd, txn, x, y, w, h,heading, r, g, b, a, ...) --Call directly, no need to RequestStreamedTextureDict 
 			local namespace = GetNameSpace()
 			
@@ -343,7 +382,7 @@ imports = function()
 		DeleteSpriteSF = DeleteSpriteS
 		DeletePageSF = DeletePageS
 		DeleteTextSF = DeleteTextS
-		Try = _sendscaleformvalues
+		
 		IsDrawingS = function(namespacedindex)
 			if namespacedindex == nil then return false end 
 			return not ( isdrawing[namespacedindex] == nil)
@@ -356,11 +395,29 @@ imports = function()
 		end 
 		SetFadeInBegin = TEXTDRAW_MAPS("SET_FADE_IN_BEGIN",fadegroup,inspeed, outspeed, isshort, shortduration)
 		SetFadeInEnd = TEXTDRAW_MAPS("SET_FADE_IN_END")
-		SetFadeInShow = TEXTDRAW_MAPS("SET_FADE_IN_SHOW",fadegroup,isshort)
+		SetFadeInShow = TEXTDRAW_MAPS("SET_FADE_IN_SHOW",fadegroup)
 		SetFadeOut = TEXTDRAW_MAPS("SET_FADE_OUT",fadegroup)
-		SetAutoColourBegin = TEXTDRAW_MAPS("SET_AUTO_COLOUR_BEGIN",autocolorgroup,speed)
+		SetAutoColourBegin = TEXTDRAW_MAPS("SET_AUTO_COLOUR_BEGIN",speed)
 		SetAutoColourEnd = TEXTDRAW_MAPS("SET_AUTO_COLOUR_END")
-		SetAutoColourShow = TEXTDRAW_MAPS("SET_AUTO_COLOUR_SHOW",autocolorgroup)
+		SetHoverColourBegin = TEXTDRAW_MAPS("SET_HOVER_COLOUR_BEGIN",r,g,b,a)
+		SetHoverColourEnd = TEXTDRAW_MAPS("SET_HOVER_COLOUR_END")
+		
+		SetDebugMode = function(enable)
+				isdebugmode = enable 
+				CreateThread(
+					function()
+						while isdebugmode do 
+						Wait(100)
+						_sendscaleformvalues("GET_DEBUG_SELECTION",function(result)
+							if result then 
+								print(result)
+							end 
+						end,"string")
+					
+					end 
+				end)
+			
+		end 
 		TextDrawShow = TEXTDRAW_MAPS("SET_TEXT_SHOW",namespacedindex) 
 		TextDrawHide = TEXTDRAW_MAPS("SET_TEXT_HIDE",namespacedindex) 
 		TextDrawPosition = TEXTDRAW_MAPS("SET_TEXT_POSITION",namespacedindex,x,y)
@@ -379,8 +436,8 @@ imports = function()
 		TextDrawRight = TEXTDRAW_MAPS("SET_TEXT_RIGHT",namespacedindex, isright) 
 		TextDrawWrap = TEXTDRAW_MAPS("SET_TEXT_WRAP",namespacedindex, l, r) 
 		TextDrawDestroy = DeleteTextS 
-		TextDrawCreate = function(str, x, y, fontstr, scale, iscenter,isoutline, r, g, b, a)
-			local h = DrawTextS(str, x, y, fontstr, scale, iscenter,isoutline, r, g, b, a)
+		TextDrawCreate = function(str, x, y, scale, r, g, b, a)
+			local h = DrawTextS(str, x, y, scale, r, g, b, a)
 			TextDrawHide(h)
 			return h 
 		end
