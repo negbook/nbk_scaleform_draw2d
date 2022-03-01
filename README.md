@@ -1,4 +1,4 @@
-#  nbk_scaleform_draw2d (wip)
+#  nbk_scaleform_draw2d
 
 Functions:  
 Draw Rect   
