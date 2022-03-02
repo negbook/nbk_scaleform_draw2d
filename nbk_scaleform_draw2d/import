@@ -106,21 +106,23 @@ imports = function()
 					end 
 				end
 				local thisSelection = "NULL";
-				RegisterCommand(GetCurrentResourceName()..'nbk_scaleform_draw2d:ClickCheck', function()
-					if ishooking then 
+				AddEventHandler('nbk_scaleform_draw2d:ClickCheckEvent', function()
+					
+				  if ishooking then 
 						local on = {}
+						print(thisSelection)
 						if selectcbs[thisSelection] then selectcbs[thisSelection](on) end 
 						if on.click then 
 							on.click(thisSelection)
 						end 
 					end 
-				end, false)
-
-				RegisterKeyMapping(GetCurrentResourceName().."nbk_scaleform_draw2d:ClickCheck","ClickCheck","MOUSE_BUTTONANY","MOUSE_LEFT")
+				end)
+				
 				
 				CreateThread(function()
 					local ishover = false ;
 					while ishooking do 
+						
 						Wait(100)
 						_sendscaleformvalues("GET_CURRENT_SELECTION",function(result)
 							if result then 

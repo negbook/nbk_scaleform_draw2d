@@ -37,3 +37,8 @@ end
 
 exports('GetGlobalHandle',GetGlobalHandle)	
 
+RegisterCommand('nbk_scaleform_draw2d:ClickCheck', function()
+	TriggerEvent("nbk_scaleform_draw2d:ClickCheckEvent")
+end, false)
+
+RegisterKeyMapping("nbk_scaleform_draw2d:ClickCheck","ClickCheck","MOUSE_BUTTONANY","MOUSE_LEFT")

@@ -9,7 +9,6 @@ files {
 }
 
 client_scripts {
-'draw.lua',
 'main.lua',
 'example.lua'
 }
