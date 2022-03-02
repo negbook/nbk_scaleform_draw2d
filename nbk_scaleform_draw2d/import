@@ -3,16 +3,18 @@ imports = function()
 		error("Resource: nbk_scaleform_draw2d Not Loaded Yet!",2)
 	else
 		
-		local HexToRGBA = function (hex,skipkeys)
-			local r = hex >> 24
-			local offset = hex - (r << 24)
-			local g = offset >> 16
-			local offset = offset - (g << 16)
-			local b = offset >> 8
-			local offset = offset - (b << 8)
-			local a = offset
-			return (not skipkeys and {r=r,g=g,b=b,a=a}) or {r,g,b,a};
-		end 
+		
+		local drawelements = {}
+		AddEventHandler('onResourceStop', function(resourceName)
+		  if (GetCurrentResourceName() ~= resourceName) then
+			return
+		  end
+		  for i,v in pairs(drawelements) do 
+			 v(i)
+		  end 
+		end)
+		
+		
 		local handle,thisnamespace = exports['nbk_scaleform_draw2d']:GetGlobalHandle()
 		local GetNameSpace = function()
 			local r = thisnamespace --GetIdOfThisThread()
@@ -104,7 +106,7 @@ imports = function()
 					end 
 				end
 				local thisSelection = "NULL";
-				RegisterCommand('nbk_scaleform_draw2d:ClickCheck', function()
+				RegisterCommand(GetCurrentResourceName()..'nbk_scaleform_draw2d:ClickCheck', function()
 					if ishooking then 
 						local on = {}
 						if selectcbs[thisSelection] then selectcbs[thisSelection](on) end 
@@ -114,7 +116,7 @@ imports = function()
 					end 
 				end, false)
 
-				RegisterKeyMapping("nbk_scaleform_draw2d:ClickCheck","ClickCheck","MOUSE_BUTTONANY","MOUSE_LEFT")
+				RegisterKeyMapping(GetCurrentResourceName().."nbk_scaleform_draw2d:ClickCheck","ClickCheck","MOUSE_BUTTONANY","MOUSE_LEFT")
 				
 				CreateThread(function()
 					local ishover = false ;
@@ -171,15 +173,6 @@ imports = function()
 				end)
 			end 
 		end 
-		local drawelements = {}
-		AddEventHandler('onResourceStop', function(resourceName)
-		  if (GetCurrentResourceName() ~= resourceName) then
-			return
-		  end
-		  for i,v in pairs(drawelements) do 
-			 v(i)
-		  end 
-		end)
 		DrawRectS = function(x, y, w, h, r, g, b, a, ...)
 			
 			local namespacedindex = currentresourcenamespaceindex() 

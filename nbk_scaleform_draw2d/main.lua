@@ -36,3 +36,4 @@ GetGlobalHandle = function()
 end 
 
 exports('GetGlobalHandle',GetGlobalHandle)	
+
