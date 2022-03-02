@@ -171,7 +171,15 @@ imports = function()
 				end)
 			end 
 		end 
-		
+		local drawelements = {}
+		AddEventHandler('onResourceStop', function(resourceName)
+		  if (GetCurrentResourceName() ~= resourceName) then
+			return
+		  end
+		  for i,v in pairs(drawelements) do 
+			 v(i)
+		  end 
+		end)
 		DrawRectS = function(x, y, w, h, r, g, b, a, ...)
 			
 			local namespacedindex = currentresourcenamespaceindex() 
@@ -187,6 +195,7 @@ imports = function()
 			if namespacedindex:len() > 40 then error("namespace or id too long (max:40) :"..namespacedindex:len(),1) return end
 			_sendscaleformvalues("DRAW_RECT", namespacedindex, x, y, w, h, r, g, b, a, iscb, table.unpack(opt))
 			isdrawing[namespacedindex] = true
+			drawelements[namespacedindex] = DeleteRectS
 			return namespacedindex
 		end 
 		DrawCircleS = function(x, y, radius, r, g, b, a, ...)
@@ -204,6 +213,7 @@ imports = function()
 			if namespacedindex:len() > 40 then error("namespace or id too long (max:40) :"..namespacedindex:len(),1) return end
 			_sendscaleformvalues("DRAW_CIRCLE", namespacedindex,x, y, radius, r, g, b, a, iscb, table.unpack(opt))
 			isdrawing[namespacedindex] = true
+			drawelements[namespacedindex] = DeleteCircleS
 			return namespacedindex
 		end 
 		DrawSpriteS = function(txd, txn, x, y, w, h,heading, r, g, b, a, ...) --Call directly, no need to RequestStreamedTextureDict
@@ -221,6 +231,7 @@ imports = function()
 			if namespacedindex:len() > 40 then error("namespace or id too long (max:40) :"..namespacedindex:len(),1) return end
 			_sendscaleformvalues("DRAW_SPRITE", namespacedindex, txd, txn, x, y, w, h,heading, r, g, b, a, iscb, table.unpack(opt))
 			isdrawing[namespacedindex] = true
+			drawelements[namespacedindex] = DeleteSpriteS
 			return namespacedindex
 		end 
 		DrawPageS = function(file, x, y, w, h,heading, r, g, b, a, ...)  --Call directly, no need to RequestStreamedTextureDict 
@@ -238,6 +249,7 @@ imports = function()
 			if namespacedindex:len() > 40 then error("namespace or id too long (max:40) :"..namespacedindex:len(),1) return end
 			_sendscaleformvalues("DRAW_PAGE", namespacedindex, file, x, y, w, h,heading, r, g, b, a, iscb, table.unpack(opt)) 
 			isdrawing[namespacedindex] = true
+			drawelements[namespacedindex] = DeletePageS
 			return namespacedindex
 		end 
 		DrawTextS = function(str, x, y, scale, r, g, b, a, ...)
@@ -255,6 +267,7 @@ imports = function()
 			if namespacedindex:len() > 40 then error("namespace or id too long (max:40) :"..namespacedindex:len(),1) return end
 			_sendscaleformvalues("DRAW_TEXT", namespacedindex, str, x, y, scale, r, g, b, a, iscb, table.unpack(opt))
 			isdrawing[namespacedindex] = true
+			drawelements[namespacedindex] = DeleteTextS
 			return namespacedindex
 		end
 		DrawCursor = function(b)
@@ -267,6 +280,11 @@ imports = function()
 		DrawCursorS = DrawCursor
 		DeleteRectS = function(namespacedindex)
 			_sendscaleformvalues("DELETE_RECT", namespacedindex)
+			selectcbs[namespacedindex] = nil
+			isdrawing[namespacedindex] = nil
+		end 
+		DeleteCircleS = function(namespacedindex)
+			_sendscaleformvalues("DELETE_CIRCLE", namespacedindex)
 			selectcbs[namespacedindex] = nil
 			isdrawing[namespacedindex] = nil
 		end 
@@ -302,6 +320,7 @@ imports = function()
 			if namespacedindex:len() > 40 then error("namespace or id too long (max:40) :"..namespacedindex:len(),1) return end
 			_sendscaleformvalues("DRAW_RECT", namespacedindex, x, y, w, h, r, g, b, a, iscb, table.unpack(opt))
 			isdrawing[namespacedindex] = true
+			drawelements[namespacedindex] = DeleteRectSF
 			return namespacedindex
 		end 
 		DrawCircleSF = function(forcename, x, y, radius, r, g, b, a, ...)
@@ -320,6 +339,7 @@ imports = function()
 			if namespacedindex:len() > 40 then error("namespace or id too long (max:40) :"..namespacedindex:len(),1) return end
 			_sendscaleformvalues("DRAW_CIRCLE", namespacedindex, x, y, radius, r, g, b, a, iscb, table.unpack(opt))
 			isdrawing[namespacedindex] = true
+			drawelements[namespacedindex] = DeleteCircleSF
 			return namespacedindex
 		end 
 		DrawSpriteSF = function(forcename, txd, txn, x, y, w, h,heading, r, g, b, a, ...) --Call directly, no need to RequestStreamedTextureDict 
@@ -339,6 +359,7 @@ imports = function()
 			if namespacedindex:len() > 40 then error("namespace or id too long (max:40) :"..namespacedindex:len(),1) return end
 			_sendscaleformvalues("DRAW_SPRITE", namespacedindex, txd, txn, x, y, w, h,heading, r, g, b, a, iscb, table.unpack(opt))
 			isdrawing[namespacedindex] = true
+			drawelements[namespacedindex] = DeleteSpriteSF
 			return namespacedindex
 		end 
 		DrawPageSF = function(forcename, file, x, y, w, h,heading, r, g, b, a, ...)  --Call directly, no need to RequestStreamedTextureDict 
@@ -357,6 +378,7 @@ imports = function()
 			if namespacedindex:len() > 40 then error("namespace or id too long (max:40) :"..namespacedindex:len(),1) return end
 			_sendscaleformvalues("DRAW_PAGE", namespacedindex, file, x, y, w, h,heading, r, g, b, a, iscb, table.unpack(opt)) 
 			isdrawing[namespacedindex] = true
+			drawelements[namespacedindex] = DeletePageSF
 			return namespacedindex
 		end 
 		DrawTextSF = function(forcename, str, x, y, scale, r, g, b, a, ...)
@@ -375,6 +397,7 @@ imports = function()
 			if namespacedindex:len() > 40 then error("namespace or id too long (max:40) :"..namespacedindex:len(),1) return end
 			_sendscaleformvalues("DRAW_TEXT", namespacedindex, str, x, y, scale, r, g, b, a, iscb, table.unpack(opt))
 			isdrawing[namespacedindex] = true
+			drawelements[namespacedindex] = DeleteTextSF
 			return namespacedindex
 		end
 		UpdateTextSF = DrawTextSF
@@ -382,6 +405,7 @@ imports = function()
 		DeleteSpriteSF = DeleteSpriteS
 		DeletePageSF = DeletePageS
 		DeleteTextSF = DeleteTextS
+		DeleteCircleSF = DeleteCircleS
 		
 		IsDrawingS = function(namespacedindex)
 			if namespacedindex == nil then return false end 
