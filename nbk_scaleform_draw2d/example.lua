@@ -1,4 +1,4 @@
-test = 1
+test = 0
 CreateThread(function() 
 	load(LoadResourceFile("nbk_scaleform_draw2d", 'import'))()
 	--'restart nbk_scaleform_draw2d'
@@ -37,10 +37,10 @@ CreateThread(function()
 		TextDrawRight(r,true)
 		SetAutoColourBegin(100)
 		
-		DrawTextS("%NBK_CUSTOM1%",0.09,0.22400001445858,0.36500004290554,0,0,0,255)
+		XX = DrawTextS("%NBK_CUSTOM1%",0.09,0.22400001445858,0.36500004290554,0,0,0,255)
 		DrawTextS("deluxo",0.26968752940395,0.22400001445858,0.36500004290554,0,0,0,255)
 		DrawTextS("~y~Suicide~w~",0.09,0.26200001892546,0.36500004290554)
-		DrawTextS("~y~~h~he %NBK_CUSTOM2% ~n~ ~BLIP_BENNYS~ ~FACE_TITLE~ ~ws~ ~ws~ ~ws~",0.09,0.30000002339233,0.36500004290554)
+		X = DrawTextS("~y~~h~he %NBK_CUSTOM2% ~n~ ~BLIP_BENNYS~ ~FACE_TITLE~ ~ws~ ~ws~ ~ws~",0.09,0.30000002339233,0.36500004290554)
 		
 		SetAutoColourBegin(50)
 		DrawTextS("~g~$3000~g~",0.28321878050664,0.30000002339233,0.36500004290554)
@@ -53,7 +53,7 @@ CreateThread(function()
 			DrawTextS("~g~$3000~g~",0.7,0.45,0.36500004290554)
 			DrawTextS("~g~$3000~g~",0.7,0.50,0.36500004290554)
 		
-		local x= DrawTextS("~y~~h~he %NBK_CUSTOM1% %NBK_CUSTOM2% %NBK_CUSTOM3% ~FACE_TITLE~ ~ws~ ~ws~ ~ws~",0.09,0.33800002785921,0.36500004290554,155,155,155,255)
+		x= DrawTextS("~y~~h~he %NBK_CUSTOM1% %NBK_CUSTOM2% %NBK_CUSTOM3% ~FACE_TITLE~ ~ws~ ~ws~ ~ws~",0.09,0.33800002785921,0.36500004290554,155,155,155,255)
 		DrawTextSF("hello","hello",0.09,0.42000003679297,0.36500004290554,255,255,255,255,function(on)
 			on.click = function(selection)
 				print("wow this is hello click",selection)
@@ -93,6 +93,9 @@ CreateThread(function()
 				AddTextEntry("NBK_CUSTOM1","HELLO"..math.random(0,150))
 				AddTextEntry("NBK_CUSTOM2","HELLO2"..math.random(15,666))
 				AddTextEntry("NBK_CUSTOM3","HELLO3"..math.random(32,1523))
+            TextDrawUpdateAutoLabel(x)
+            TextDrawUpdateAutoLabel(X)
+            TextDrawUpdateAutoLabel(XX)
 			end 
 		end)
 		return 
