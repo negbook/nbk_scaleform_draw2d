@@ -1,13 +1,15 @@
 test = 0
 CreateThread(function() 
-	load(LoadResourceFile("nbk_scaleform_draw2d", 'import'))()
-	--'restart nbk_scaleform_draw2d'
-	InitExample()
+   load(LoadResourceFile("nbk_scaleform_draw2d", 'import'))()
+
+	
 	if test == 1 then goto state1 end
+
 	
 	::default:: do 
 		return 
 	end 
+   
 	::state1:: do 
 		
 		SetHoverColourBegin(255,255,255,100)
@@ -70,7 +72,7 @@ CreateThread(function()
 		end)
 		DrawPageSF("hello2","mp_menu_glare",0.05,0.05,1.0,1.0,0,255,255,255,255,function(on)
 		end)
-		
+      
 		--SetFadeInEnd()
 		SetFadeInShow("fadegroup1")
 		DrawCursor()

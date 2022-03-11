@@ -5,6 +5,7 @@ imports = function()
 		
 		
 		local drawelements = {}
+      local pagefiles = {}
 		AddEventHandler('onResourceStop', function(resourceName)
 		  if (GetCurrentResourceName() ~= resourceName) then
 			return
@@ -245,6 +246,7 @@ imports = function()
 			_sendscaleformvalues("DRAW_PAGE", namespacedindex, file, x, y, w, h,heading, r, g, b, a, iscb, table.unpack(opt)) 
 			isdrawing[namespacedindex] = true
 			drawelements[namespacedindex] = DeletePageS
+         pagefiles[namespacedindex] = file 
 			return namespacedindex
 		end 
 		DrawTextS = function(str, x, y, scale, r, g, b, a, ...)
@@ -291,6 +293,8 @@ imports = function()
 		DeletePageS = function(namespacedindex)
 			print('deletepage')
 			_sendscaleformvalues("DELETE_PAGE", namespacedindex)
+         SetScaleformMovieAsNoLongerNeeded(RequestScaleformMovie(pagefiles[namespacedindex]))
+         pagefiles[namespacedindex] = nil 
 			selectcbs[namespacedindex] = nil
 			isdrawing[namespacedindex] = nil
 		end 
@@ -374,6 +378,7 @@ imports = function()
 			_sendscaleformvalues("DRAW_PAGE", namespacedindex, file, x, y, w, h,heading, r, g, b, a, iscb, table.unpack(opt)) 
 			isdrawing[namespacedindex] = true
 			drawelements[namespacedindex] = DeletePageS
+         pagefiles[namespacedindex] = file 
 			return namespacedindex
 		end 
 		DrawTextSF = function(forcename, str, x, y, scale, r, g, b, a, ...)
@@ -490,6 +495,7 @@ imports = function()
 end 
 if GetCurrentResourceName() ~= "nbk_scaleform_draw2d" then
 	imports() 
+   
 else 
 	InitExample = imports
 end 
