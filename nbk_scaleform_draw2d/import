@@ -1,9 +1,13 @@
+if nbk_scaleform_draw2d_imported == nil then 
+   nbk_scaleform_draw2d_imported = false 
+end 
+
 imports = function()
 	if GetResourceState("nbk_scaleform_draw2d") ~= "started" then 
 		error("Resource: nbk_scaleform_draw2d Not Loaded Yet!",2)
 	else
 		
-		
+		if not nbk_scaleform_draw2d_imported then 
 		local drawelements = {}
       local pagefiles = {}
 		AddEventHandler('onResourceStop', function(resourceName)
@@ -17,12 +21,13 @@ imports = function()
 		
 		
 		local handle,thisnamespace = exports['nbk_scaleform_draw2d']:GetGlobalHandle()
+      
+      
 		local GetNameSpace = function()
 			local r = thisnamespace --GetIdOfThisThread()
 			
 			return r 
 		end 
-		if not handle then return end 
 		local actions = {
 			["numberinteger"] = ScaleformMovieMethodAddParamInt,
 			["numberfloat"] = ScaleformMovieMethodAddParamFloat,
@@ -496,11 +501,12 @@ imports = function()
 			TextDrawHide(h)
 			return h 
 		end
+      nbk_scaleform_draw2d_imported = true 
+      end 
 	end
 end 
 if GetCurrentResourceName() ~= "nbk_scaleform_draw2d" then
-	imports() 
-   
+   imports()
 else 
-	InitExample = imports
+   InitExample = imports
 end 

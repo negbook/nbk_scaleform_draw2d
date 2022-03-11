@@ -1,29 +1,29 @@
 GlobalHandle = nil 
 GlobalNameSpace = 0	
 local function Reload()
-	if GlobalHandle == nil or not HasScaleformMovieLoaded(GlobalHandle) then 
-		local handle = RequestScaleformMovie("nbk_scaleform_draw2d")
-		while not HasScaleformMovieLoaded(handle) do
-			Wait(0)
-		end
-		GlobalHandle = handle
-		CreateThread(function()
-			while GlobalHandle do 
-				Wait(0)
-				DrawScaleformMovieFullscreen(GlobalHandle)
+   CreateThread(function()
+      if GlobalHandle == nil or not HasScaleformMovieLoaded(GlobalHandle) then 
+         local handle = RequestScaleformMovie("nbk_scaleform_draw2d")
+         while not HasScaleformMovieLoaded(handle) do
+            Wait(0)
+         end
+         GlobalHandle = handle
+         
+         CreateThread(function()
+            while GlobalHandle do 
+               Wait(0)
+               DrawScaleformMovieFullscreen(GlobalHandle)
 
-			end 
-			SetScaleformMovieAsNoLongerNeeded(GlobalHandle)
-			GlobalHandle = nil 
-			Reload()
-		end) 
-	end 
+            end 
+            SetScaleformMovieAsNoLongerNeeded(GlobalHandle)
+            GlobalHandle = nil 
+            Reload()
+         end) 
+      end 
+   end)
 end 
 
-CreateThread(function() 
-	Reload()
-	
-end) 
+Reload()
 
 
 GetGlobalHandle = function()
