@@ -300,9 +300,7 @@ imports = function()
          
          if pagefiles[namespacedindex] then 
             local h = RequestScaleformMovie(pagefiles[namespacedindex])
-            if HasScaleformMovieLoaded(h)  then 
-               SetScaleformMovieAsNoLongerNeeded(h)
-            end 
+            SetScaleformMovieAsNoLongerNeeded(h)
          end 
          pagefiles[namespacedindex] = nil 
 			selectcbs[namespacedindex] = nil
