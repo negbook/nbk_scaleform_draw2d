@@ -291,9 +291,14 @@ imports = function()
 			isdrawing[namespacedindex] = nil
 		end 
 		DeletePageS = function(namespacedindex)
-			print('deletepage')
 			_sendscaleformvalues("DELETE_PAGE", namespacedindex)
-         SetScaleformMovieAsNoLongerNeeded(RequestScaleformMovie(pagefiles[namespacedindex]))
+         
+         if pagefiles[namespacedindex] then 
+            local h = RequestScaleformMovie(pagefiles[namespacedindex])
+            if HasScaleformMovieLoaded(h)  then 
+               SetScaleformMovieAsNoLongerNeeded(h)
+            end 
+         end 
          pagefiles[namespacedindex] = nil 
 			selectcbs[namespacedindex] = nil
 			isdrawing[namespacedindex] = nil
